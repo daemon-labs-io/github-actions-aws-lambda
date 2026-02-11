@@ -1,7 +1,7 @@
-# Deploy AWS Lambda functions with GitHub Actions
+# Build GitHub Actions to Deploy AWS Lambda
 
-This workshop walks you through setting up a production-ready CI/CD pipeline using **GitHub Actions**, **AWS Lambda**, and **TypeScript**.  
-It focuses on building automated deployments with secure OIDC authentication, optimising for production workloads, and demonstrating modern cloud-native development practices.
+This workshop teaches you how to **build a GitHub Actions workflow from scratch** that automatically deploys AWS Lambda functions.  
+You'll start with an empty workflow and incrementally add pieces until you have a production-ready CI/CD pipeline.
 
 ---
 
@@ -34,9 +34,9 @@ Add the output secrets to your GitHub repository before starting the workshop.
 
 ---
 
-## 1. The foundation
+## Section 1: Getting Started (10 minutes)
 
-**Goal:** Get a working GitHub Actions deployment pipeline running.
+**Goal:** Create your workshop branch and understand the starting point.
 
 ### Create your workshop branch
 
@@ -49,7 +49,16 @@ Add the output secrets to your GitHub repository before starting the workshop.
 > [!NOTE]
 > This naming convention allows everyone to deploy to their own Lambda function without conflicts.
 
-### Make your first change
+### Examine the starting workflow
+
+1. Click on the **`.github/workflows/deploy-lambda.yaml`** file
+2. Notice it's mostly empty with TODO comments
+3. This is your blank slate - you'll build this step by step!
+
+> [!TIP]
+> There's also a `deploy-lambda-solution.yaml` file with the complete solution for reference.
+
+### Trigger your first workflow
 
 1. Click **"Add file"** → **"Create new file"**
 2. Name the file: `workshop-log.md`
@@ -61,159 +70,230 @@ Add the output secrets to your GitHub repository before starting the workshop.
 4. Scroll down and click **"Commit new file"**
 5. Leave the default commit message and click **"Commit new file"** again
 
-> [!TIP]
-> The workflow is triggered automatically when you push to branches ending with `-workshop`. Your branch name is important!
-
-### Watch your deployment
-
-1. Click the **"Actions"** tab at the top of the repository
-2. You should see a workflow running with your branch name
-3. Click on the workflow to see real-time deployment logs
-4. Watch the steps execute:
-   - ✅ Repository checkout
-   - ✅ Username extraction (showing your username)
-   - ✅ AWS authentication via OIDC
-   - ✅ Lambda function creation
-   - ✅ Automated testing
+6. Click the **"Actions"** tab - you should see a workflow run with just the checkout step
 
 ---
 
-## 2. The production Lambda
+## Section 2: GitHub Actions Foundation (10 minutes)
 
-**Goal:** Understand the production-ready Lambda function you're deploying.
+**Goal:** Add the core GitHub Actions pieces for authentication and setup.
 
-### Examine the code structure
+### Step 2.1: Configure AWS Authentication
 
-1. In the repository, click on the **`production/`** folder
-2. Explore the files:
-   - `src/index.ts` - The main Lambda handler
-   - `Dockerfile` - Production build configuration
-   - `package.json` - Dependencies and scripts
-   - `tsconfig.json` - TypeScript configuration
-
-> [!NOTE]
-> The `production/` directory contains a production-ready Lambda function that's different from the local development version in the original workshop.
-
-### Key files to understand
-
-#### `production/src/index.ts` - The Lambda handler
-
-This is a production-ready handler that:
-- Connects to real AWS S3 service (not LocalStack)
-- Returns structured JSON responses
-- Includes deployment metadata and error handling
-
-```typescript
-export const handler: Handler = async (event, context) => {
-  console.log("🚀 Lambda deployed via GitHub Actions!");
-  
-  try {
-    const response = await client.send(command);
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: "Hello from GitHub Actions deployed Lambda!",
-        buckets: response.Buckets?.map(b => b.Name) || [],
-        deployedBy: process.env.GITHUB_ACTOR || "Unknown",
-        deployedAt: new Date().toISOString()
-      })
-    };
-  } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: "Error connecting to S3",
-        error: error instanceof Error ? error.message : "Unknown error"
-      })
-    };
-  }
-};
-```
-
-#### `production/Dockerfile` - Multi-stage build
-
-This is a production-optimized build:
-- **Stage 1**: Builder with development dependencies
-- **Stage 2**: Runtime with only production dependencies
-- **Result**: Smaller, more secure images
-
-```Dockerfile
-FROM public.ecr.aws/lambda/nodejs:24 AS base
-
-FROM base AS builder
-COPY ./package*.json ${LAMBDA_TASK_ROOT}
-RUN npm ci
-COPY ./ ${LAMBDA_TASK_ROOT}
-RUN npm run build
-
-FROM base
-COPY --from=builder ${LAMBDA_TASK_ROOT}/package*.json ${LAMBDA_TASK_ROOT}
-RUN npm ci --only=production
-COPY --from=builder ${LAMBDA_TASK_ROOT}/build ${LAMBDA_TASK_ROOT}/build
-
-CMD [ "build/index.handler" ]
-```
-
----
-
-## 3. The CI/CD pipeline
-
-**Goal:** Understand how the GitHub Actions workflow deploys to AWS.
-
-### Examine the workflow
-
-1. Click on the **`.github/workflows/deploy-lambda.yaml`** file
-2. Examine the key sections:
-
-#### Trigger condition
+Add this step after the checkout step:
 
 ```yaml
-on:
-  push:
-    branches: ['*-workshop']
-```
-
-> [!NOTE]
-> This workflow only runs for branches ending with `-workshop`, which is why your branch name was important.
-
-#### OIDC authentication
-
-```yaml
-permissions:
-  id-token: write
-  contents: read
-
 - name: Configure AWS Credentials
-  uses: aws-actions/configure-aws-credentials@v4
+  uses: aws-actions/configure-aws-credentials@v6
   with:
     role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
     aws-region: ${{ env.AWS_REGION }}
 ```
 
-> [!TIP]
-> No AWS secrets needed! OIDC creates a secure trust relationship between GitHub and AWS.
+### Step 2.2: Extract Username from Branch
 
-#### Deployment steps
+```yaml
+- name: Extract username from branch
+  run: |
+    USERNAME=$(echo ${{ github.ref_name }} | sed 's/-workshop//')
+    echo "USERNAME=$USERNAME" >> $GITHUB_ENV
+    echo "FUNCTION_NAME=${USERNAME}-workshop-lambda" >> $GITHUB_ENV
+    echo "🚨 Deploying for user: $USERNAME"
+```
 
-The workflow handles:
-1. **Build**: Compiles TypeScript and packages the Lambda
-2. **Deploy**: Creates or updates the Lambda function
-3. **URL creation**: Sets up a Function URL for HTTP access
-4. **Testing**: Automatically tests the deployed function
+### Step 2.3: Set Up Node.js Build Environment
+
+```yaml
+- name: Setup Node.js
+  uses: actions/setup-node@v4
+  with:
+    node-version: '24'
+    cache: 'npm'
+    cache-dependency-path: production/package-lock.json
+```
+
+**Your turn:** Add all three steps, commit, and watch the workflow build your foundation!
 
 ---
 
-## 4. Testing your deployment
+## Section 3: Build and Package (10 minutes)
 
-**Goal:** Verify your Lambda is working and accessible.
+**Goal:** Add the build process to compile and package your Lambda function.
 
-### Get your function details
+### Step 3.1: Install Dependencies and Build TypeScript
 
-From the GitHub Actions workflow summary, find:
-- **Function name**: `YOUR-USERNAME-workshop-lambda`
-- **Function URL**: Direct HTTPS endpoint
+```yaml
+- name: Install dependencies and build
+  working-directory: ./production
+  run: |
+    npm ci
+    npm run build
+```
 
-### Test via cURL
+### Step 3.2: Package Lambda for Deployment
+
+```yaml
+- name: Package Lambda function
+  working-directory: ./production
+  run: |
+    npm run package
+    echo "📦 Package created"
+    ls -la function.zip
+```
+
+> [!TIP]
+> Check the `production/package.json` to see what the `build` and `package` scripts do.
+
+**Your turn:** Add the build steps and commit. Your workflow should now successfully build and package the Lambda!
+
+---
+
+## Section 4: Deploy to AWS Lambda (10 minutes)
+
+**Goal:** Add the logic to deploy your packaged Lambda to AWS.
+
+### Step 4.1: Check if Lambda Already Exists
+
+```yaml
+- name: Check if Lambda function exists
+  id: check_lambda
+  run: |
+    if aws lambda get-function --function-name ${{ env.FUNCTION_NAME }} >/dev/null 2>&1; then
+      echo "exists=true" >> $GITHUB_OUTPUT
+      echo "✅ Lambda function ${{ env.FUNCTION_NAME }} exists"
+    else
+      echo "exists=false" >> $GITHUB_OUTPUT
+      echo "➡️ Lambda function ${{ env.FUNCTION_NAME }} needs to be created"
+    fi
+```
+
+### Step 4.2: Create New Lambda or Update Existing
+
+```yaml
+- name: Create Lambda function
+  if: steps.check_lambda.outputs.exists == 'false'
+  working-directory: ./production
+  run: |
+    aws lambda create-function \
+      --function-name ${{ env.FUNCTION_NAME }} \
+      --runtime nodejs20.x \
+      --role ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }} \
+      --handler build/index.handler \
+      --zip-file fileb://function.zip \
+      --description "Workshop Lambda deployed by ${{ env.USERNAME }}" \
+      --environment Variables={GITHUB_ACTOR=${{ env.USERNAME }}} \
+      --tags Workshop=GitHubActions,User=${{ env.USERNAME }}
+    echo "🎉 Lambda function ${{ env.FUNCTION_NAME }} created!"
+
+- name: Update Lambda function code
+  if: steps.check_lambda.outputs.exists == 'true'
+  working-directory: ./production
+  run: |
+    aws lambda update-function-code \
+      --function-name ${{ env.FUNCTION_NAME }} \
+      --zip-file fileb://function.zip
+    echo "🔄 Lambda function ${{ env.FUNCTION_NAME }} updated!"
+```
+
+**Your turn:** Add the deployment logic and commit. Your first Lambda should now be created!
+
+---
+
+## Section 5: Make Lambda Accessible (10 minutes)
+
+**Goal:** Add HTTP access and testing to complete your deployment pipeline.
+
+### Step 5.1: Create Function URL for HTTP Access
+
+```yaml
+- name: Get Lambda function URL
+  id: lambda_info
+  run: |
+    # Check if function has a URL config
+    if aws lambda get-function-url-config --function-name ${{ env.FUNCTION_NAME }} >/dev/null 2>&1; then
+      FUNCTION_URL=$(aws lambda get-function-url-config --function-name ${{ env.FUNCTION_NAME }} --query 'FunctionUrl' --output text)
+      echo "url=$FUNCTION_URL" >> $GITHUB_OUTPUT
+    else
+      echo "url=" >> $GITHUB_OUTPUT
+    fi
+
+- name: Create Function URL (if not exists)
+  if: steps.lambda_info.outputs.url == ''
+  run: |
+    FUNCTION_URL=$(aws lambda create-function-url-config \
+      --function-name ${{ env.FUNCTION_NAME }} \
+      --auth-type NONE \
+      --query 'FunctionUrl' \
+      --output text)
+    
+    # Add permission for public access
+    aws lambda add-permission \
+      --function-name ${{ env.FUNCTION_NAME }} \
+      --action lambda:InvokeFunctionUrl \
+      --principal '*' \
+      --statement-id function-url-public-access \
+      --function-url-auth-type NONE
+    
+    echo "🔗 Function URL created: $FUNCTION_URL"
+    echo "url=$FUNCTION_URL" >> $GITHUB_OUTPUT
+```
+
+### Step 5.2: Test Your Deployed Lambda
+
+```yaml
+- name: Test Lambda function
+  run: |
+    echo "🧪 Testing Lambda function..."
+    FUNCTION_URL=$(aws lambda get-function-url-config --function-name ${{ env.FUNCTION_NAME }} --query 'FunctionUrl' --output text)
+    
+    # Wait a moment for function to be ready
+    sleep 5
+    
+    # Test the function
+    RESPONSE=$(curl -s -X POST "$FUNCTION_URL" -d '{}' -H "Content-Type: application/json")
+    echo "📋 Lambda response:"
+    echo "$RESPONSE" | jq '.'
+    
+    # Extract status from response
+    STATUS=$(echo "$RESPONSE" | jq -r '.statusCode // "unknown"')
+    if [ "$STATUS" = "200" ]; then
+      echo "✅ Lambda function is working correctly!"
+    else
+      echo "⚠️ Lambda function returned status: $STATUS"
+    fi
+```
+
+**Your turn:** Add the URL creation and testing. Your Lambda should now be publicly accessible!
+
+---
+
+## Section 6: Complete and Iterate (10 minutes)
+
+**Goal:** Add deployment summary and iterate on your workflow.
+
+### Step 6.1: Add Deployment Summary
+
+```yaml
+- name: Summary
+  run: |
+    echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+    echo "" >> $GITHUB_STEP_SUMMARY
+    echo "**User:** ${{ env.USERNAME }}" >> $GITHUB_STEP_SUMMARY
+    echo "**Function Name:** ${{ env.FUNCTION_NAME }}" >> $GITHUB_STEP_SUMMARY
+    echo "**Region:** ${{ env.AWS_REGION }}" >> $GITHUB_STEP_SUMMARY
+    
+    FUNCTION_URL=$(aws lambda get-function-url-config --function-name ${{ env.FUNCTION_NAME }} --query 'FunctionUrl' --output text)
+    echo "**Function URL:** $FUNCTION_URL" >> $GITHUB_STEP_SUMMARY
+    echo "" >> $GITHUB_STEP_SUMMARY
+    echo "### 🧪 Test your Lambda:" >> $GITHUB_STEP_SUMMARY
+    echo '```bash' >> $GITHUB_STEP_SUMMARY
+    echo "curl -X POST \"$FUNCTION_URL\" -d '{}' -H \"Content-Type: application/json\"" >> $GITHUB_STEP_SUMMARY
+    echo '```' >> $GITHUB_STEP_SUMMARY
+```
+
+### Step 6.2: Test Your Complete Deployment
+
+From the GitHub Actions workflow summary, find your Function URL and test it:
 
 ```shell
 # Use the URL from your workflow summary
@@ -222,237 +302,41 @@ curl -X POST "YOUR-FUNCTION-URL" \
   -H "Content-Type: application/json"
 ```
 
-### Expected response
-
-```json
-{
-  "message": "Hello from GitHub Actions deployed Lambda!",
-  "buckets": ["bucket1", "bucket2"],
-  "deployedBy": "YOUR-USERNAME",
-  "deployedAt": "2026-02-10T15:30:00.000Z"
-}
-```
-
-> [!NOTE]
-- The `buckets` array shows your AWS S3 buckets
-- `deployedBy` shows your GitHub username
-- `deployedAt` shows when the deployment happened
-
-### Test in browser
-
-You can also visit your Function URL directly in a web browser.
-
----
-
-## 5. Advanced deployment
-
-**Goal:** Make changes and see the automated redeployment.
-
-### Modify your Lambda
+### Step 6.3: Iterate and Improve
 
 1. Navigate to **`production/src/index.ts`**
-2. Click the **pencil icon** (Edit) to modify the file
-3. Add a custom feature by updating the handler:
+2. Click the **pencil icon** and modify the handler
+3. Add a custom message or logic
+4. Commit and watch the automatic redeployment
+5. Test your updated function with the same URL
 
-```typescript
-export const handler: Handler = async (event, context) => {
-  console.log("🚀 Modified Lambda deployed via GitHub Actions!");
-  
-  // Add custom logic
-  const customMessage = process.env.CUSTOM_MESSAGE || "Hello from workshop!";
-  
-  try {
-    const response = await client.send(command);
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: customMessage,
-        buckets: response.Buckets?.map(b => b.Name) || [],
-        deployedBy: process.env.GITHUB_ACTOR || "Unknown",
-        deployedAt: new Date().toISOString()
-      })
-    };
-  } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: "Error connecting to S3",
-        error: error instanceof Error ? error.message : "Unknown error"
-      })
-    };
-  }
-};
-```
-
-### Deploy your changes
-
-1. Scroll to the bottom of the page
-2. In the "Commit changes" section:
-   - Leave the default commit message
-   - Select **"Commit directly to the YOUR-USERNAME-workshop branch"**
-3. Click **"Commit changes"**
-
-> [!TIP]
-- Go to the **Actions** tab to watch the workflow run again
-- Notice how it automatically detects the change and redeploys
-- Test your updated function with the same URL
-
-### Add environment variables
-
-You can add environment variables to the workflow:
-
-```yaml
-- name: Update Lambda function configuration
-  run: |
-    aws lambda update-function-configuration \
-      --function-name ${{ env.FUNCTION_NAME }} \
-      --environment Variables={CUSTOM_MESSAGE="Hello from ${{ env.USERNAME }}!"}
-```
+**Your turn:** Complete your workflow and make your first modification!
 
 ---
 
-## 6. Production patterns
+## 🎉 Congratulations!
 
-**Goal:** Understand production-ready deployment patterns.
+You've **built a complete GitHub Actions workflow from scratch** that:
 
-### Compare local vs production
+✅ **Builds** TypeScript Lambda functions automatically  
+✅ **Deploys** to AWS Lambda with secure OIDC authentication  
+✅ **Creates** HTTP endpoints via Function URLs  
+✅ **Tests** deployments automatically  
+✅ **Updates** existing functions on code changes  
 
-| Aspect | Local Development | Production Deployment |
-|--------|-------------------|----------------------|
-| **Environment** | LocalStack | Real AWS |
-| **Authentication** | Local credentials | OIDC |
-| **Build** | Manual | Automated |
-| **Testing** | Ad-hoc | Automated |
-| **Scaling** | Single user | Multi-tenant |
-
-### Multi-environment strategy
-
-This pattern scales to multiple environments:
-
-```yaml
-# Development branches
-on:
-  push:
-    branches: ['feature-*', 'bugfix-*']
-    # Creates: dev-feature-name-lambda
-
-# Staging
-on:
-  push:
-    branches: ['staging']
-    # Creates: staging-lambda
-
-# Production
-on:
-  push:
-    branches: ['main']
-    # Creates: production-lambda (with manual approval)
-```
-
-### Security best practices
-
-1. **OIDC Authentication**: No static AWS secrets
-2. **Least Privilege**: Minimal permissions per role
-3. **Resource Tagging**: Easy identification and cleanup
-4. **Function URLs**: Simpler than API Gateway for workshops
-
----
-
-## 7. Troubleshooting
-
-**Goal:** Diagnose and fix common deployment issues.
-
-### Common problems
-
-#### Permission denied errors
-
-```bash
-# Check your workflow logs
-# Verify repository secrets are configured
-# Ensure OIDC role trust relationship is correct
-```
-
-#### Build failures
-
-```bash
-# Check TypeScript compilation
-# Verify Node.js version compatibility
-# Look at the build logs in GitHub Actions
-```
-
-#### Function URL not working
-
-```bash
-# Wait a few minutes after deployment
-# Check if function was created successfully
-# Verify the URL from the workflow summary
-```
-
-### Debugging workflow
-
-1. **GitHub Actions tab**: Real-time logs
-2. **AWS CloudWatch**: Lambda execution logs
-3. **AWS Console**: Verify function exists and has correct configuration
-
-### Getting help
-
-1. Check the **Actions** tab for detailed error logs
-2. Look at the specific workflow step that failed
-3. Ask to workshop facilitator for assistance
-
----
-
-## 8. Cleanup
-
-**Goal:** Properly clean up workshop resources.
-
-### Participants
-
-1. Click on **"Branch: YOUR-USERNAME-workshop"** dropdown
-2. Select **"main"** branch
-3. Click **"Code"** tab
-4. Click on **"X branches"** (where X is number of branches)
-5. Find your branch and click the **trash icon** to delete it
-6. Confirm deletion
-
-### Workshop facilitator
-
-```shell
-# Remove all workshop AWS resources
-./scripts/cleanup-aws.sh
-```
-
-> [!WARNING]
-> Only run the cleanup script if you're the workshop facilitator. This will delete all Lambda functions created during the workshop.
-
-### What gets cleaned up
-
-- All Lambda functions with workshop tags
-- Lambda execution roles
-- CloudWatch log groups
-- Function URL configurations
-- Workshop IAM policies
-
----
-
-## 🎉 Congratulations
-
-You've successfully built a production-ready CI/CD pipeline that:
-
-✅ **Deploys** Lambda functions automatically  
-✅ **Uses** secure OIDC authentication  
-✅ **Scales** to multiple participants  
-✅ **Includes** automated testing  
-✅ **Demonstrates** modern cloud practices  
-
-### Next steps
+### Next Steps
 
 - Try adding automated testing to your workflow
 - Explore API Gateway integration for more complex routing
 - Learn about infrastructure as code with CDK/Terraform
 - Build multi-environment pipelines with approval workflows
 
-### Keep learning
+### Cleanup
+
+1. Delete your workshop branch in the GitHub UI
+2. Workshop facilitator runs `./scripts/cleanup-aws.sh`
+
+### Keep Learning
 
 - **GitHub Actions Documentation**: https://docs.github.com/en/actions
 - **AWS Lambda Developer Guide**: https://docs.aws.amazon.com/lambda/
