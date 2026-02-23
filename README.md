@@ -13,26 +13,7 @@ Before beginning this workshop, please ensure your environment is correctly set 
 
 ➡️ **[Prerequisites guide](https://github.com/daemon-labs-io/prerequisites)**
 
-### Workshop facilitator setup
-
-> [!CAUTION]
-> This only needs to be done by the workshop facilitator before the workshop begins.  
-> Participants don't need AWS credentials - they'll use secure OIDC authentication.
-
-If you're running this workshop, complete the AWS setup first:
-
-```shell
-./scripts/setup-aws.sh
-```
-
-This script creates:
-- GitHub OIDC provider for secure authentication (no secrets needed)
-- IAM roles for GitHub Actions and Lambda execution
-- Required permissions for the workshop
-
-Add the output secrets to your GitHub repository before starting the workshop.
-
----
+## Prerequisites
 
 ## Section 1: Getting Started (10 minutes)
 
@@ -330,11 +311,6 @@ You've **built a complete GitHub Actions workflow from scratch** that:
 - Explore API Gateway integration for more complex routing
 - Learn about infrastructure as code with CDK/Terraform
 - Build multi-environment pipelines with approval workflows
-
-### Cleanup
-
-1. Delete your workshop branch in the GitHub UI
-2. Workshop facilitator runs `./scripts/cleanup-aws.sh`
 
 ### Keep Learning
 
