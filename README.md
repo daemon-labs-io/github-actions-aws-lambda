@@ -112,11 +112,13 @@ Add this step after the checkout step:
 ### Install Dependencies and Build TypeScript
 
 ```yaml
-- name: Install dependencies and build
+- name: Install dependencies
   working-directory: ./production
-  run: |
-    npm ci
-    npm run build
+  run: npm ci
+
+- name: Build TypeScript
+  working-directory: ./production
+  run: npm run build
 ```
 
 ### Package Lambda for Deployment
