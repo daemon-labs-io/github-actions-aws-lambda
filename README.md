@@ -13,7 +13,7 @@ Before beginning this workshop, please ensure your environment is correctly set 
 
 ➡️ **[Prerequisites guide](https://github.com/daemon-labs-io/prerequisites)**
 
-## Prerequisites
+---
 
 ## Section 1: Getting Started (10 minutes)
 
@@ -59,7 +59,7 @@ Before beginning this workshop, please ensure your environment is correctly set 
 
 **Goal:** Add the core GitHub Actions pieces for authentication and setup.
 
-### Step 2.1: Configure AWS Authentication
+### Configure AWS Authentication
 
 Add this step after the checkout step:
 
@@ -71,7 +71,7 @@ Add this step after the checkout step:
     aws-region: ${{ env.AWS_REGION }}
 ```
 
-### Step 2.2: Extract Username from Branch
+### Extract Username from Branch
 
 ```yaml
 - name: Extract username from branch
@@ -82,7 +82,7 @@ Add this step after the checkout step:
     echo "🚨 Deploying for user: $USERNAME"
 ```
 
-### Step 2.3: Set Up Node.js Build Environment
+### Set Up Node.js Build Environment
 
 ```yaml
 - name: Setup Node.js
@@ -101,7 +101,7 @@ Add this step after the checkout step:
 
 **Goal:** Add the build process to compile and package your Lambda function.
 
-### Step 3.1: Install Dependencies and Build TypeScript
+### Install Dependencies and Build TypeScript
 
 ```yaml
 - name: Install dependencies and build
@@ -111,7 +111,7 @@ Add this step after the checkout step:
     npm run build
 ```
 
-### Step 3.2: Package Lambda for Deployment
+### Package Lambda for Deployment
 
 ```yaml
 - name: Package Lambda function
@@ -133,7 +133,7 @@ Add this step after the checkout step:
 
 **Goal:** Add the logic to deploy your packaged Lambda to AWS.
 
-### Step 4.1: Check if Lambda Already Exists
+### Check if Lambda Already Exists
 
 ```yaml
 - name: Check if Lambda function exists
@@ -148,7 +148,7 @@ Add this step after the checkout step:
     fi
 ```
 
-### Step 4.2: Create New Lambda or Update Existing
+### Create New Lambda or Update Existing
 
 ```yaml
 - name: Create Lambda function
@@ -184,7 +184,7 @@ Add this step after the checkout step:
 
 **Goal:** Add HTTP access and testing to complete your deployment pipeline.
 
-### Step 5.1: Create Function URL for HTTP Access
+### Create Function URL for HTTP Access
 
 ```yaml
 - name: Get Lambda function URL
@@ -219,7 +219,7 @@ Add this step after the checkout step:
     echo "url=$FUNCTION_URL" >> $GITHUB_OUTPUT
 ```
 
-### Step 5.2: Test Your Deployed Lambda
+### Test Your Deployed Lambda
 
 ```yaml
 - name: Test Lambda function
@@ -252,7 +252,7 @@ Add this step after the checkout step:
 
 **Goal:** Add deployment summary and iterate on your workflow.
 
-### Step 6.1: Add Deployment Summary
+### Add Deployment Summary
 
 ```yaml
 - name: Summary
@@ -272,7 +272,7 @@ Add this step after the checkout step:
     echo '```' >> $GITHUB_STEP_SUMMARY
 ```
 
-### Step 6.2: Test Your Complete Deployment
+### Test Your Complete Deployment
 
 From the GitHub Actions workflow summary, find your Function URL and test it:
 
@@ -283,7 +283,7 @@ curl -X POST "YOUR-FUNCTION-URL" \
   -H "Content-Type: application/json"
 ```
 
-### Step 6.3: Iterate and Improve
+### Iterate and Improve
 
 1. Navigate to **`production/src/index.ts`**
 2. Click the **pencil icon** and modify the handler
