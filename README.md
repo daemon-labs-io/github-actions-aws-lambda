@@ -15,7 +15,7 @@ Before beginning this workshop, please ensure your environment is correctly set 
 
 ---
 
-## Section 1: Getting Started (10 minutes)
+## Section 1: Getting Started
 
 **Goal:** Create your workshop branch and understand the starting point.
 
@@ -63,7 +63,7 @@ Before beginning this workshop, please ensure your environment is correctly set 
 
 ---
 
-## Section 2: GitHub Actions Foundation (10 minutes)
+## Section 2: GitHub Actions Foundation
 
 **Goal:** Add the core GitHub Actions pieces for authentication and setup.
 
@@ -105,7 +105,7 @@ Add this step after the checkout step:
 
 ---
 
-## Section 3: Build and Package (10 minutes)
+## Section 3: Build and Package
 
 **Goal:** Add the build process to compile and package your Lambda function.
 
@@ -139,7 +139,7 @@ Add this step after the checkout step:
 
 ---
 
-## Section 4: Deploy to AWS Lambda (10 minutes)
+## Section 4: Deploy to AWS Lambda
 
 **Goal:** Add the logic to deploy your packaged Lambda to AWS.
 
@@ -190,7 +190,7 @@ Add this step after the checkout step:
 
 ---
 
-## Section 5: Make Lambda Accessible (10 minutes)
+## Section 5: Make Lambda Accessible
 
 **Goal:** Add HTTP access and testing to complete your deployment pipeline.
 
@@ -258,7 +258,7 @@ Add this step after the checkout step:
 
 ---
 
-## Section 6: Complete and Iterate (10 minutes)
+## Section 6: Complete and Iterate
 
 **Goal:** Add deployment summary and iterate on your workflow.
 
