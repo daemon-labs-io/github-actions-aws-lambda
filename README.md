@@ -21,11 +21,10 @@ Before beginning this workshop, please ensure your environment is correctly set 
 
 ### Create your workshop branch
 
-1. Open the repository in your browser: https://github.com/daemon-labs-io/github-actions-aws-lambda
-2. Click the "Branch: main" button in the top-left corner
-3. Type your branch name: `YOUR-USERNAME-workshop`
+1. Click the "Branch: main" button in the top-left corner
+2. Type your branch name: `YOUR-USERNAME-workshop`
    - Replace `YOUR-USERNAME` with your actual GitHub username
-4. Click "Create branch: YOUR-USERNAME-workshop"
+3. Click "Create branch: YOUR-USERNAME-workshop"
 
 > [!NOTE]
 > This naming convention allows everyone to deploy to their own Lambda function without conflicts.
