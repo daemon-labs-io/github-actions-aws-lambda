@@ -31,28 +31,35 @@ Before beginning this workshop, please ensure your environment is correctly set 
 > [!NOTE]
 > This naming convention allows everyone to deploy to their own Lambda function without conflicts.
 
-### Examine the starting workflow
-
-1. Click on the **`.github/workflows/deploy-lambda.yaml`** file
-2. Notice it's mostly empty with TODO comments
-3. This is your blank slate - you'll build this step by step!
-
-> [!TIP]
-> There's also a `deploy-lambda-solution.yaml` file with the complete solution for reference.
-
-### Trigger your first workflow
+### Create your workflow file
 
 1. Click **"Add file"** → **"Create new file"**
-2. Name the file: `workshop-log.md`
-3. Add content in the editor:
-   ```markdown
-   # Workshop started by YOUR-NAME
-   Date: $(date)
+2. Name the file: `.github/workflows/deploy-lambda.yaml`
+3. Add this minimal workflow:
+   ```yaml
+   name: Deploy Lambda to AWS
+
+   on:
+     push:
+       branches: ['*-workshop']
+
+   env:
+     AWS_REGION: eu-west-1
+
+   jobs:
+     deploy:
+       runs-on: ubuntu-latest
+       permissions:
+         id-token: write
+         contents: read
+       steps:
+         - name: Checkout repository
+           uses: actions/checkout@v6
    ```
 4. Scroll down and click **"Commit new file"**
 5. Leave the default commit message and click **"Commit new file"** again
 
-6. Click the **"Actions"** tab - you should see a workflow run with just the checkout step
+6. Click the **"Actions"** tab - you should see a workflow run with just the checkout step!
 
 ---
 
