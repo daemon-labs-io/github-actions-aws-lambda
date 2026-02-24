@@ -24,7 +24,7 @@ jobs:
         run: |
           USERNAME=test
           echo "USERNAME=$USERNAME" >> $GITHUB_ENV
-          echo "FUNCTION_NAME=${USERNAME}-workshop-lambda" >> $GITHUB_ENV
+          echo "FUNCTION_NAME=$USERNAME-workshop-lambda" >> $GITHUB_ENV
           echo "🚨 Deploying function '$FUNCTION_NAME' for user '$USERNAME'"
       # - name: Setup Node.js
       #   uses: actions/setup-node@v6
