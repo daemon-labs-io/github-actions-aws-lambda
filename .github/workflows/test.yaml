@@ -20,6 +20,11 @@ jobs:
         with:
             role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
             aws-region: ${{ env.AWS_REGION }}
+      - name: Extract username from branch
+        run: |
+          echo "USERNAME=test" >> $GITHUB_ENV
+          echo "FUNCTION_NAME=${USERNAME}-workshop-lambda" >> $GITHUB_ENV
+          echo "🚨 Deploying for user: $USERNAME"
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
@@ -35,3 +40,85 @@ jobs:
       - name: Package Lambda function
         working-directory: ./lambda
         run: npm run package
+      - name: Check if Lambda function exists
+        id: check_lambda
+        run: |
+          if aws lambda get-function --function-name ${{ env.FUNCTION_NAME }} >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "✅ Lambda function ${{ env.FUNCTION_NAME }} exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "➡️ Lambda function ${{ env.FUNCTION_NAME }} needs to be created"
+          fi
+      - name: Create Lambda function
+        if: steps.check_lambda.outputs.exists == 'false'
+        working-directory: ./lambda
+        run: |
+          aws lambda create-function \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --runtime nodejs20.x \
+            --role ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }} \
+            --handler build/index.handler \
+            --zip-file fileb://function.zip \
+            --description "Workshop Lambda deployed by ${{ env.USERNAME }}" \
+            --environment Variables={GITHUB_ACTOR=${{ env.USERNAME }}} \
+            --tags Workshop=GitHubActions,User=${{ env.USERNAME }}
+          echo "🎉 Lambda function ${{ env.FUNCTION_NAME }} created!"
+
+      - name: Update Lambda function code
+        if: steps.check_lambda.outputs.exists == 'true'
+        working-directory: ./lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --zip-file fileb://function.zip
+          echo "🔄 Lambda function ${{ env.FUNCTION_NAME }} updated!"
+      - name: Get Lambda function URL
+        id: lambda_info
+        run: |
+          # Check if function has a URL config
+          if aws lambda get-function-url-config --function-name ${{ env.FUNCTION_NAME }} >/dev/null 2>&1; then
+            FUNCTION_URL=$(aws lambda get-function-url-config --function-name ${{ env.FUNCTION_NAME }} --query 'FunctionUrl' --output text)
+            echo "url=$FUNCTION_URL" >> $GITHUB_OUTPUT
+          else
+            echo "url=" >> $GITHUB_OUTPUT
+          fi
+      - name: Create Function URL (if not exists)
+        if: steps.lambda_info.outputs.url == ''
+        run: |
+          FUNCTION_URL=$(aws lambda create-function-url-config \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --auth-type NONE \
+            --query 'FunctionUrl' \
+            --output text)
+          
+          # Add permission for public access
+          aws lambda add-permission \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --action lambda:InvokeFunctionUrl \
+            --principal '*' \
+            --statement-id function-url-public-access \
+            --function-url-auth-type NONE
+          
+          echo "🔗 Function URL created: $FUNCTION_URL"
+          echo "url=$FUNCTION_URL" >> $GITHUB_OUTPUT
+      - name: Test Lambda function
+        run: |
+          echo "🧪 Testing Lambda function..."
+          FUNCTION_URL=$(aws lambda get-function-url-config --function-name ${{ env.FUNCTION_NAME }} --query 'FunctionUrl' --output text)
+          
+          # Wait a moment for function to be ready
+          sleep 5
+          
+          # Test the function
+          RESPONSE=$(curl -s -X POST "$FUNCTION_URL" -d '{}' -H "Content-Type: application/json")
+          echo "📋 Lambda response:"
+          echo "$RESPONSE" | jq '.'
+          
+          # Extract status from response
+          STATUS=$(echo "$RESPONSE" | jq -r '.statusCode // "unknown"')
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Lambda function is working correctly!"
+          else
+            echo "⚠️ Lambda function returned status: $STATUS"
+          fi
