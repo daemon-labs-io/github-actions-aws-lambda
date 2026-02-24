@@ -98,7 +98,7 @@ Add this step after the checkout step:
   with:
     node-version: '24'
     cache: 'npm'
-    cache-dependency-path: production/package-lock.json
+    cache-dependency-path: lambda/package-lock.json
 ```
 
 **Your turn:** Add all three steps, commit, and watch the workflow build your foundation!
@@ -113,11 +113,11 @@ Add this step after the checkout step:
 
 ```yaml
 - name: Install dependencies
-  working-directory: ./production
+  working-directory: ./lambda
   run: npm ci
 
 - name: Build TypeScript
-  working-directory: ./production
+  working-directory: ./lambda
   run: npm run build
 ```
 
@@ -125,7 +125,7 @@ Add this step after the checkout step:
 
 ```yaml
 - name: Package Lambda function
-  working-directory: ./production
+  working-directory: ./lambda
   run: |
     npm run package
     echo "📦 Package created"
@@ -133,7 +133,7 @@ Add this step after the checkout step:
 ```
 
 > [!TIP]
-> Check the `production/package.json` to see what the `build` and `package` scripts do.
+> Check the `lambda/package.json` to see what the `build` and `package` scripts do.
 
 **Your turn:** Add the build steps and commit. Your workflow should now successfully build and package the Lambda!
 
@@ -163,7 +163,7 @@ Add this step after the checkout step:
 ```yaml
 - name: Create Lambda function
   if: steps.check_lambda.outputs.exists == 'false'
-  working-directory: ./production
+  working-directory: ./lambda
   run: |
     aws lambda create-function \
       --function-name ${{ env.FUNCTION_NAME }} \
@@ -178,7 +178,7 @@ Add this step after the checkout step:
 
 - name: Update Lambda function code
   if: steps.check_lambda.outputs.exists == 'true'
-  working-directory: ./production
+  working-directory: ./lambda
   run: |
     aws lambda update-function-code \
       --function-name ${{ env.FUNCTION_NAME }} \
@@ -295,7 +295,7 @@ curl -X POST "YOUR-FUNCTION-URL" \
 
 ### Iterate and Improve
 
-1. Navigate to **`production/src/index.ts`**
+1. Navigate to **`lambda/src/index.ts`**
 2. Click the **pencil icon** and modify the handler
 3. Add a custom message or logic
 4. Commit and watch the automatic redeployment
