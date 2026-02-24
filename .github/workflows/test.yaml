@@ -22,7 +22,8 @@ jobs:
             aws-region: ${{ env.AWS_REGION }}
       - name: Extract username from branch
         run: |
-          echo "USERNAME=test" >> $GITHUB_ENV
+          USERNAME=test
+          echo "USERNAME=$USERNAME" >> $GITHUB_ENV
           echo "FUNCTION_NAME=${USERNAME}-workshop-lambda" >> $GITHUB_ENV
           echo "🚨 Deploying function '$FUNCTION_NAME' for user '$USERNAME'"
       # - name: Setup Node.js
