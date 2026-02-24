@@ -94,10 +94,10 @@ Add this step after the checkout step:
 
 ```yaml
 - name: Setup Node.js
-  uses: actions/setup-node@v4
+  uses: actions/setup-node@v6
   with:
-    node-version: '24'
-    cache: 'npm'
+    node-version: 24
+    cache: npm
     cache-dependency-path: lambda/package-lock.json
 ```
 
@@ -115,7 +115,6 @@ Add this step after the checkout step:
 - name: Install dependencies
   working-directory: ./lambda
   run: npm ci
-
 - name: Build TypeScript
   working-directory: ./lambda
   run: npm run build
@@ -126,10 +125,7 @@ Add this step after the checkout step:
 ```yaml
 - name: Package Lambda function
   working-directory: ./lambda
-  run: |
-    npm run package
-    echo "📦 Package created"
-    ls -la function.zip
+  run: npm run package
 ```
 
 > [!TIP]
