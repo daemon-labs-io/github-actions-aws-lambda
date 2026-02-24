@@ -254,50 +254,50 @@ Add this step after the checkout step:
 
 ---
 
-## Section 6: Complete and Iterate
+## Section 6: Simplify with Actions
 
-**Goal:** Add deployment summary and iterate on your workflow.
+**Goal:** See how pre-built actions can simplify your workflow.
 
-### Add Deployment Summary
+You've now built a complete deployment pipeline using raw AWS CLI commands. Let's see how we can simplify it!
+
+### Replace Deployment with aws-lambda-deploy
+
+The aws-lambda-deploy action handles all of this automatically:
+- Checking if the function exists
+- Creating or updating the function
+- Creating the function URL
+
+Replace your **Section 4 and 5 steps** with this single action:
 
 ```yaml
-- name: Summary
-  run: |
-    echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
-    echo "" >> $GITHUB_STEP_SUMMARY
-    echo "**User:** ${{ env.USERNAME }}" >> $GITHUB_STEP_SUMMARY
-    echo "**Function Name:** ${{ env.FUNCTION_NAME }}" >> $GITHUB_STEP_SUMMARY
-    echo "**Region:** ${{ env.AWS_REGION }}" >> $GITHUB_STEP_SUMMARY
-    
-    FUNCTION_URL=$(aws lambda get-function-url-config --function-name ${{ env.FUNCTION_NAME }} --query 'FunctionUrl' --output text)
-    echo "**Function URL:** $FUNCTION_URL" >> $GITHUB_STEP_SUMMARY
-    echo "" >> $GITHUB_STEP_SUMMARY
-    echo "### 🧪 Test your Lambda:" >> $GITHUB_STEP_SUMMARY
-    echo '```bash' >> $GITHUB_STEP_SUMMARY
-    echo "curl -X POST \"$FUNCTION_URL\" -d '{}' -H \"Content-Type: application/json\"" >> $GITHUB_STEP_SUMMARY
-    echo '```' >> $GITHUB_STEP_SUMMARY
+- name: Deploy to Lambda
+  uses: aws-actions/aws-lambda-deploy@v1.1.0
+  with:
+    function-name: ${{ env.FUNCTION_NAME }}
+    code-artifacts-dir: ./lambda
+    handler: index.handler
+    runtime: nodejs20.x
+    function-url-auth-type: NONE
+    description: "Workshop Lambda deployed by ${{ env.USERNAME }}"
 ```
 
-### Test Your Complete Deployment
+> [!TIP]
+> The action also supports environment variables, memory size, timeout, and many other options!
 
-From the GitHub Actions workflow summary, find your Function URL and test it:
+### Test Your Simplified Workflow
 
-```shell
-# Use the URL from your workflow summary
-curl -X POST "YOUR-FUNCTION-URL" \
-  -d '{"message": "Hello from workshop!"}' \
-  -H "Content-Type: application/json"
-```
+1. Commit your changes
+2. Watch the workflow run
+3. Notice how much simpler the deployment step is!
 
-### Iterate and Improve
+### Compare the Results
 
-1. Navigate to **`lambda/src/index.ts`**
-2. Click the **pencil icon** and modify the handler
-3. Add a custom message or logic
-4. Commit and watch the automatic redeployment
-5. Test your updated function with the same URL
+| Approach | Lines of Code | Steps |
+|----------|---------------|-------|
+| Raw CLI (Sections 4-5) | ~50 | 6+ steps |
+| aws-lambda-deploy | ~10 | 1 step |
 
-**Your turn:** Complete your workflow and make your first modification!
+Both approaches work - the action just makes it easier!
 
 ---
 
@@ -308,8 +308,8 @@ You've **built a complete GitHub Actions workflow from scratch** that:
 ✅ **Builds** TypeScript Lambda functions automatically  
 ✅ **Deploys** to AWS Lambda with secure OIDC authentication  
 ✅ **Creates** HTTP endpoints via Function URLs  
-✅ **Tests** deployments automatically  
-✅ **Updates** existing functions on code changes  
+✅ **Learned** both raw CLI commands and pre-built actions  
+✅ **Can simplify** deployments with aws-lambda-deploy
 
 ### Next Steps
 
