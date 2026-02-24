@@ -4,4 +4,6 @@
 !.github
 !.github/**/*
 !.gitignore
+!lambda
+!lambda/**/*
 !*.md
