@@ -6,9 +6,37 @@
 set -e
 
 # Configuration
+AWS_PROFILE=""
 AWS_REGION="eu-west-1"
 WORKSHOP_ROLE_NAME="GitHubActions-Lambda-Workshop"
 LAMBDA_EXECUTION_ROLE_NAME="Lambda-Execution-Role-Workshop"
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -p|--profile)
+            AWS_PROFILE="$2"
+            shift 2
+            ;;
+        -r|--region)
+            AWS_REGION="$2"
+            shift 2
+            ;;
+        *)
+            echo "Usage: $0 [-p|--profile <profile>] [-r|--region <region>]"
+            exit 1
+            ;;
+    esac
+done
+
+# Helper function to run aws commands
+aws_cmd() {
+    local cmd="aws"
+    if [[ -n "$AWS_PROFILE" ]]; then
+        cmd="$cmd --profile $AWS_PROFILE"
+    fi
+    $cmd "$@"
+}
 
 echo "🚀 Setting up GitHub Actions AWS Lambda Workshop Environment"
 echo "Region: $AWS_REGION"
@@ -22,16 +50,17 @@ fi
 
 # Test AWS credentials
 echo "🔍 Testing AWS credentials..."
-aws sts get-caller-identity
+aws_cmd sts get-caller-identity
 echo ""
 
 # Create OIDC provider for GitHub (if it doesn't exist)
 echo "📝 Setting up GitHub OIDC provider..."
-GITHUB_OIDC_PROVIDER_ARN="arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):oidc-provider/token.actions.githubusercontent.com"
+ACCOUNT_ID=$(aws_cmd sts get-caller-identity --query Account --output text)
+GITHUB_OIDC_PROVIDER_ARN="arn:aws:iam::${ACCOUNT_ID}:oidc-provider/token.actions.githubusercontent.com"
 
-if ! aws iam get-open-id-connect-provider --open-id-connect-provider-arn $GITHUB_OIDC_PROVIDER_ARN 2>/dev/null; then
+if ! aws_cmd iam get-open-id-connect-provider --open-id-connect-provider-arn $GITHUB_OIDC_PROVIDER_ARN 2>/dev/null; then
     echo "Creating GitHub OIDC provider..."
-    aws iam create-open-id-connect-provider \
+    aws_cmd iam create-open-id-connect-provider \
         --url https://token.actions.githubusercontent.com \
         --client-id-list sts.amazonaws.com \
         --thumbprint-list 6938fd4d98bab03faadb97b34396831e3780aea1
@@ -43,7 +72,6 @@ echo ""
 
 # Create GitHub Actions role
 echo "🔐 Creating GitHub Actions role: $WORKSHOP_ROLE_NAME"
-ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
 # Create trust policy for GitHub Actions
 cat > trust-policy.json << EOF
@@ -103,16 +131,16 @@ cat > workshop-permissions.json << EOF
 EOF
 
 # Check if role already exists
-if ! aws iam get-role --role-name $WORKSHOP_ROLE_NAME 2>/dev/null; then
+if ! aws_cmd iam get-role --role-name $WORKSHOP_ROLE_NAME 2>/dev/null; then
     echo "Creating GitHub Actions role..."
-    aws iam create-role \
+    aws_cmd iam create-role \
         --role-name $WORKSHOP_ROLE_NAME \
         --assume-role-policy-document file://trust-policy.json \
         --description "GitHub Actions role for Lambda workshop" \
         --tags Key=Workshop,Value=GitHubActions
     
     # Attach permissions
-    aws iam put-role-policy \
+    aws_cmd iam put-role-policy \
         --role-name $WORKSHOP_ROLE_NAME \
         --policy-name "LambdaWorkshopPermissions" \
         --policy-document file://workshop-permissions.json
@@ -120,7 +148,7 @@ if ! aws iam get-role --role-name $WORKSHOP_ROLE_NAME 2>/dev/null; then
     echo "✅ GitHub Actions role created"
 else
     echo "✅ GitHub Actions role already exists, updating permissions..."
-    aws iam put-role-policy \
+    aws_cmd iam put-role-policy \
         --role-name $WORKSHOP_ROLE_NAME \
         --policy-name "LambdaWorkshopPermissions" \
         --policy-document file://workshop-permissions.json
@@ -174,9 +202,9 @@ cat > lambda-execution-permissions.json << EOF
 }
 EOF
 
-if ! aws iam get-role --role-name $LAMBDA_EXECUTION_ROLE_NAME 2>/dev/null; then
+if ! aws_cmd iam get-role --role-name $LAMBDA_EXECUTION_ROLE_NAME 2>/dev/null; then
     echo "Creating Lambda execution role..."
-    aws iam create-role \
+    aws_cmd iam create-role \
         --role-name $LAMBDA_EXECUTION_ROLE_NAME \
         --assume-role-policy-document file://lambda-trust-policy.json \
         --description "Lambda execution role for workshop" \
@@ -184,7 +212,7 @@ if ! aws iam get-role --role-name $LAMBDA_EXECUTION_ROLE_NAME 2>/dev/null; then
         --tags Key=Workshop,Value=GitHubActions
     
     # Attach permissions
-    aws iam put-role-policy \
+    aws_cmd iam put-role-policy \
         --role-name $LAMBDA_EXECUTION_ROLE_NAME \
         --policy-name "LambdaWorkshopExecutionPermissions" \
         --policy-document file://lambda-execution-permissions.json
@@ -192,7 +220,7 @@ if ! aws iam get-role --role-name $LAMBDA_EXECUTION_ROLE_NAME 2>/dev/null; then
     echo "✅ Lambda execution role created"
 else
     echo "✅ Lambda execution role already exists, updating permissions..."
-    aws iam put-role-policy \
+    aws_cmd iam put-role-policy \
         --role-name $LAMBDA_EXECUTION_ROLE_NAME \
         --policy-name "LambdaWorkshopExecutionPermissions" \
         --policy-document file://lambda-execution-permissions.json
