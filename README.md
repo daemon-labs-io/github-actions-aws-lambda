@@ -30,34 +30,40 @@ Click the **"Branch: main"** button in the top-left corner, type your branch nam
 
 ### Create your workflow file
 
-Click **"Add file"** → **"Create new file"**, name the file `.github/workflows/deploy-lambda.yaml`, and add this minimal workflow:
+Click **"Add file"** → **"Create new file"**, name the file:
 
-   ```yaml
-   name: Deploy Lambda to AWS
+```text
+.github/workflows/deploy-lambda.yaml
+``` 
 
-   on:
-     push:
-       branches: ["*-workshop"]
+Add this minimal workflow:
 
-   concurrency:
-     group: ${{ github.workflow }}-${{ github.ref }}
-     cancel-in-progress: true
+```yaml
+name: Deploy Lambda to AWS
 
-   env:
-     AWS_REGION: eu-west-1
+on:
+  push:
+    branches: ["*-workshop"]
 
-   jobs:
-     deploy:
-       runs-on: ubuntu-latest
-       env:
-         FUNCTION_NAME: ${{ github.ref_name }}
-       permissions:
-         id-token: write
-         contents: read
-       steps:
-          - name: Checkout repository
-            uses: actions/checkout@v6
-    ```
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: eu-west-1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      FUNCTION_NAME: ${{ github.ref_name }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+```
 
 Scroll down and click **"Commit new file"**, then leave the default commit message and click **"Commit new file"** again.
 
