@@ -231,13 +231,13 @@ Replace your **Section 4 and 5 steps** with this single action:
 
 ```yaml
 - name: Deploy to Lambda
-  uses: aws-actions/aws-lambda-deploy@v1.1.0
+  uses: aws-actions/aws-lambda-deploy@v1
   with:
     function-name: ${{ env.FUNCTION_NAME }}
+    function-description: "Workshop Lambda deployed by ${{ github.actor }}"
     code-artifacts-dir: ./lambda
     handler: index.handler
     runtime: nodejs20.x
-    description: "Workshop Lambda deployed by ${{ github.actor }}"
 ```
 
 > [!TIP]

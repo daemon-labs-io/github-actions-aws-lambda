@@ -105,6 +105,8 @@ cat > workshop-permissions.json << EOF
                 "lambda:CreateFunction",
                 "lambda:UpdateFunctionCode",
                 "lambda:GetFunction",
+                "lambda:GetFunctionConfiguration",
+                "lambda:UpdateFunctionConfiguration",
                 "lambda:InvokeFunction",
                 "lambda:GetFunctionUrlConfig",
                 "lambda:CreateFunctionUrlConfig",
