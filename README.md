@@ -30,7 +30,7 @@ Click the **"Branch: main"** button in the top-left corner, type your branch nam
 
 ### Create your workflow file
 
-Click **"Add file"** → **"Create new file"**, name the file:
+Click **"Add file"** → **"Create new file"** and name the file:
 
 ```text
 .github/workflows/deploy-lambda.yaml
