@@ -223,9 +223,9 @@ You've now built a complete deployment pipeline using raw AWS CLI commands. Let'
 
 The aws-lambda-deploy action handles all of this automatically:
 
+- Building and packaging the code
 - Checking if the function exists
 - Creating or updating the function
-- Testing the function
 
 Replace your **Section 4 and 5 steps** with this single action:
 
@@ -249,10 +249,12 @@ Commit your changes, watch the workflow run, and notice how much simpler the dep
 
 ### Compare the Results
 
-| Approach               | Lines of Code | Steps    |
-| ---------------------- | ------------- | -------- |
-| Raw CLI (Sections 4-5) | ~30           | 4+ steps |
-| aws-lambda-deploy     | ~10           | 1 step   |
+The aws-lambda-deploy action eliminates the packaging step (zip) and simplifies deployment:
+
+| Approach               | What it does                              | Lines | Steps |
+| ---------------------- | ----------------------------------------- | ----- | ----- |
+| Raw CLI (Sections 3-5) | Build → Package → Deploy → Test          | ~40   | 5     |
+| aws-lambda-deploy     | Build → Deploy (handles packaging)       | ~10   | 1     |
 
 Both approaches work - the action just makes it easier!
 
