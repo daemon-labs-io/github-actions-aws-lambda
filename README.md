@@ -21,7 +21,7 @@ Before beginning this workshop, please ensure your environment is correctly set 
 
 ### Create your workshop branch
 
-1. Open the repository in a new tab: https://github.com/daemon-labs-io/github-actions-aws-lambda
+1. Open the repository in a new tab: [daemon-labs-io/github-actions-aws-lambda](https://github.com/daemon-labs-io/github-actions-aws-lambda)
    - Right-click the link and "Open link in new tab" (or use split view)
 2. Click the "Branch: main" button in the top-left corner
 3. Type your branch name: `YOUR-USERNAME-workshop`
@@ -299,7 +299,7 @@ Both approaches work - the action just makes it easier!
 
 ---
 
-## 🎉 Congratulations!
+## 🎉 Congratulations
 
 You've **built a complete GitHub Actions workflow from scratch** that:
 
@@ -315,9 +315,3 @@ You've **built a complete GitHub Actions workflow from scratch** that:
 - Explore API Gateway integration for more complex routing
 - Learn about infrastructure as code with CDK/Terraform
 - Build multi-environment pipelines with approval workflows
-
-### Keep Learning
-
-- **GitHub Actions Documentation**: https://docs.github.com/en/actions
-- **AWS Lambda Developer Guide**: https://docs.aws.amazon.com/lambda/
-- **OIDC with AWS**: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
