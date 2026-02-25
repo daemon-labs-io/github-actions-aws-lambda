@@ -1,3 +1,4 @@
+---
 repository:
   name: github-actions-aws-lambda
   description: Automate AWS Lambda pipelines with GitHub Actions

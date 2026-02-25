@@ -13,6 +13,7 @@ If you're running this workshop, complete the AWS setup first:
 ```
 
 This script creates:
+
 - GitHub OIDC provider for secure authentication (no secrets needed)
 - IAM roles for GitHub Actions and Lambda execution
 - Required permissions for the workshop

@@ -3,7 +3,7 @@ name: Linting
 on:
   pull_request:
     branches-ignore:
-      - '*-workshop'
+      - "*-workshop"
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

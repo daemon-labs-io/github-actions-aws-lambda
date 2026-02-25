@@ -1,3 +1,4 @@
+---
 services:
   curl:
     image: curlimages/curl

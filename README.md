@@ -36,12 +36,17 @@ Before beginning this workshop, please ensure your environment is correctly set 
 1. Click **"Add file"** → **"Create new file"**
 2. Name the file: `.github/workflows/deploy-lambda.yaml`
 3. Add this minimal workflow:
+
    ```yaml
    name: Deploy Lambda to AWS
 
    on:
      push:
-       branches: ['*-workshop']
+       branches: ["*-workshop"]
+
+   concurrency:
+     group: ${{ github.workflow }}-${{ github.ref }}
+     cancel-in-progress: true
 
    env:
      AWS_REGION: eu-west-1
@@ -58,6 +63,7 @@ Before beginning this workshop, please ensure your environment is correctly set 
          - name: Checkout repository
            uses: actions/checkout@v6
    ```
+
 4. Scroll down and click **"Commit new file"**
 5. Leave the default commit message and click **"Commit new file"** again
 
@@ -203,7 +209,7 @@ Add this step after the checkout step:
       --auth-type NONE \
       --query 'FunctionUrl' \
       --output text)
-    
+
     # Add permission for public access
     aws lambda add-permission \
       --function-name ${{ env.FUNCTION_NAME }} \
@@ -211,7 +217,7 @@ Add this step after the checkout step:
       --principal '*' \
       --statement-id function-url-public-access \
       --function-url-auth-type NONE
-    
+
     echo "🔗 Function URL created: $FUNCTION_URL"
     echo "url=$FUNCTION_URL" >> $GITHUB_OUTPUT
 ```
@@ -223,15 +229,15 @@ Add this step after the checkout step:
   run: |
     echo "🧪 Testing Lambda function..."
     FUNCTION_URL=$(aws lambda get-function-url-config --function-name ${{ env.FUNCTION_NAME }} --query 'FunctionUrl' --output text)
-    
+
     # Wait a moment for function to be ready
     sleep 5
-    
+
     # Test the function
     RESPONSE=$(curl -s -X POST "$FUNCTION_URL" -d '{}' -H "Content-Type: application/json")
     echo "📋 Lambda response:"
     echo "$RESPONSE" | jq '.'
-    
+
     # Extract status from response
     STATUS=$(echo "$RESPONSE" | jq -r '.statusCode // "unknown"')
     if [ "$STATUS" = "200" ]; then
@@ -254,6 +260,7 @@ You've now built a complete deployment pipeline using raw AWS CLI commands. Let'
 ### Replace Deployment with aws-lambda-deploy
 
 The aws-lambda-deploy action handles all of this automatically:
+
 - Checking if the function exists
 - Creating or updating the function
 - Creating the function URL
@@ -283,10 +290,10 @@ Replace your **Section 4 and 5 steps** with this single action:
 
 ### Compare the Results
 
-| Approach | Lines of Code | Steps |
-|----------|---------------|-------|
-| Raw CLI (Sections 4-5) | ~50 | 6+ steps |
-| aws-lambda-deploy | ~10 | 1 step |
+| Approach               | Lines of Code | Steps    |
+| ---------------------- | ------------- | -------- |
+| Raw CLI (Sections 4-5) | ~50           | 6+ steps |
+| aws-lambda-deploy      | ~10           | 1 step   |
 
 Both approaches work - the action just makes it easier!
 
