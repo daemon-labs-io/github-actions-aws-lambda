@@ -21,53 +21,57 @@ Before beginning this workshop, please ensure your environment is correctly set 
 
 ### Create your workshop branch
 
-1. Open the repository in a new tab: [daemon-labs-io/github-actions-aws-lambda](https://github.com/daemon-labs-io/github-actions-aws-lambda)
-   - Right-click the link and "Open link in new tab" (or use split view)
-2. Click the "Branch: main" button in the top-left corner
-3. Type your branch name: `YOUR-USERNAME-workshop`
-   - Replace `YOUR-USERNAME` with your actual GitHub username
-4. Click "Create branch: YOUR-USERNAME-workshop"
+Open the repository in a new tab: [daemon-labs-io/github-actions-aws-lambda](https://github.com/daemon-labs-io/github-actions-aws-lambda) (right-click the link and "Open link in new tab" or use split view).
+
+Click the **"Branch: main"** button in the top-left corner, type your branch name as `YOUR-USERNAME-workshop` (replacing `YOUR-USERNAME` with your actual GitHub username), then click **"Create branch: YOUR-USERNAME-workshop"**.
 
 > [!NOTE]
 > This naming convention allows everyone to deploy to their own Lambda function without conflicts.
 
 ### Create your workflow file
 
-1. Click **"Add file"** → **"Create new file"**
-2. Name the file: `.github/workflows/deploy-lambda.yaml`
-3. Add this minimal workflow:
+Click **"Add file"** → **"Create new file"**, name the file:
 
-   ```yaml
-   name: Deploy Lambda to AWS
+```text
+.github/workflows/deploy-lambda.yaml
+``` 
 
-   on:
-     push:
-       branches: ["*-workshop"]
+Add this minimal workflow:
 
-   concurrency:
-     group: ${{ github.workflow }}-${{ github.ref }}
-     cancel-in-progress: true
+```yaml
+name: Deploy Lambda to AWS
 
-   env:
-     AWS_REGION: eu-west-1
+on:
+  push:
+    branches: ["*-workshop"]
 
-   jobs:
-     deploy:
-       runs-on: ubuntu-latest
-       env:
-         FUNCTION_NAME: ${{ github.ref_name }}
-       permissions:
-         id-token: write
-         contents: read
-       steps:
-         - name: Checkout repository
-           uses: actions/checkout@v6
-   ```
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
-4. Scroll down and click **"Commit new file"**
-5. Leave the default commit message and click **"Commit new file"** again
+env:
+  AWS_REGION: eu-west-1
 
-6. Click the **"Actions"** tab - you should see a workflow run with just the checkout step!
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      FUNCTION_NAME: ${{ github.ref_name }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+```
+
+Scroll down and click **"Commit new file"**, then leave the default commit message and click **"Commit new file"** again.
+
+### Open a pull request
+
+Click **"Compare & pull request"**, select **"Create draft pull request"**, give it a title like "Workshop: YOUR-USERNAME", then click **"Create pull request"**.
+
+Click the **"Actions"** link from your PR to see your workflow run!
 
 ---
 
@@ -284,9 +288,7 @@ Replace your **Section 4 and 5 steps** with this single action:
 
 ### Test Your Simplified Workflow
 
-1. Commit your changes
-2. Watch the workflow run
-3. Notice how much simpler the deployment step is!
+Commit your changes, watch the workflow run, and notice how much simpler the deployment step is!
 
 ### Compare the Results
 
