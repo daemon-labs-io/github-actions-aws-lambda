@@ -33,3 +33,12 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: lambda/package-lock.json
+      - name: Install dependencies
+        working-directory: ./lambda
+        run: npm ci
+      - name: Build TypeScript
+        working-directory: ./lambda
+        run: npm run build
+      - name: Package Lambda function
+        working-directory: ./lambda
+        run: npm run package
