@@ -225,7 +225,7 @@ The aws-lambda-deploy action handles all of this automatically:
 
 - Checking if the function exists
 - Creating or updating the function
-- Creating the function URL
+- Testing the function
 
 Replace your **Section 4 and 5 steps** with this single action:
 
@@ -237,7 +237,6 @@ Replace your **Section 4 and 5 steps** with this single action:
     code-artifacts-dir: ./lambda
     handler: index.handler
     runtime: nodejs20.x
-    function-url-auth-type: NONE
     description: "Workshop Lambda deployed by ${{ github.actor }}"
 ```
 
@@ -252,8 +251,8 @@ Commit your changes, watch the workflow run, and notice how much simpler the dep
 
 | Approach               | Lines of Code | Steps    |
 | ---------------------- | ------------- | -------- |
-| Raw CLI (Sections 4-5) | ~50           | 6+ steps |
-| aws-lambda-deploy      | ~10           | 1 step   |
+| Raw CLI (Sections 4-5) | ~30           | 4+ steps |
+| aws-lambda-deploy     | ~10           | 1 step   |
 
 Both approaches work - the action just makes it easier!
 
