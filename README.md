@@ -221,13 +221,13 @@ You've now built a complete deployment pipeline using raw AWS CLI commands. Let'
 
 ### Replace Deployment with aws-lambda-deploy
 
-The aws-lambda-deploy action handles all of this automatically:
+The aws-lambda-deploy action handles packaging and deployment automatically:
 
-- Building and packaging the code
+- Packaging the code (zip)
 - Checking if the function exists
 - Creating or updating the function
 
-Replace your **Section 4 and 5 steps** with this single action:
+Replace the **Section 4** deployment steps and keep the **Section 5** test step:
 
 ```yaml
 - name: Deploy to Lambda
@@ -251,10 +251,10 @@ Commit your changes, watch the workflow run, and notice how much simpler the dep
 
 The aws-lambda-deploy action eliminates the packaging step (zip) and simplifies deployment:
 
-| Approach               | What it does                              | Lines | Steps |
-| ---------------------- | ----------------------------------------- | ----- | ----- |
-| Raw CLI (Sections 3-5) | Build → Package → Deploy → Test          | ~40   | 5     |
-| aws-lambda-deploy     | Build → Deploy (handles packaging)       | ~10   | 1     |
+| Approach | What it does | Lines |
+|----------|--------------|-------|
+| Raw CLI | Build → Package (zip) → Deploy → Test | ~44 |
+| aws-lambda-deploy | Build → Deploy (handles packaging) → Test | ~24 |
 
 Both approaches work - the action just makes it easier!
 
