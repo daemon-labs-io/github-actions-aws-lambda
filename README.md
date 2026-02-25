@@ -166,7 +166,7 @@ Add this step after the checkout step:
   run: |
     aws lambda create-function \
       --function-name ${{ env.FUNCTION_NAME }} \
-      --runtime nodejs20.x \
+      --runtime nodejs24.x \
       --role ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }} \
       --handler build/index.handler \
       --zip-file fileb://function.zip \
@@ -237,7 +237,7 @@ Replace your **Section 4 and 5 steps** with this single action:
     function-description: "Workshop Lambda deployed by ${{ github.actor }}"
     code-artifacts-dir: ./lambda
     handler: index.handler
-    runtime: nodejs20.x
+    runtime: nodejs24.x
 ```
 
 > [!TIP]
