@@ -58,7 +58,7 @@ echo "📝 Setting up GitHub OIDC provider..."
 ACCOUNT_ID=$(aws_cmd sts get-caller-identity --query Account --output text)
 GITHUB_OIDC_PROVIDER_ARN="arn:aws:iam::${ACCOUNT_ID}:oidc-provider/token.actions.githubusercontent.com"
 
-if ! aws_cmd iam get-open-id-connect-provider --open-id-connect-provider-arn $GITHUB_OIDC_PROVIDER_ARN 2>/dev/null; then
+if ! aws_cmd iam get-open-id-connect-provider --open-id-connect-provider-arn "$GITHUB_OIDC_PROVIDER_ARN" 2>/dev/null; then
     echo "Creating GitHub OIDC provider..."
     aws_cmd iam create-open-id-connect-provider \
         --url https://token.actions.githubusercontent.com \

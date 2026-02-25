@@ -8,8 +8,8 @@ set -e
 # Configuration
 AWS_PROFILE=""
 AWS_REGION="eu-west-1"
-WORKSHOP_ROLE_NAME="GitHubActions-Lambda-Workshop"
-LAMBDA_EXECUTION_ROLE_NAME="Lambda-Execution-Role-Workshop"
+# WORKSHOP_ROLE_NAME="GitHubActions-Lambda-Workshop"
+# LAMBDA_EXECUTION_ROLE_NAME="Lambda-Execution-Role-Workshop"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -55,7 +55,7 @@ echo ""
 
 # Clean up workshop Lambda functions
 echo "🗑️ Cleaning up workshop Lambda functions..."
-FUNCTIONS=$(aws_cmd lambda list-functions --query 'Functions[?contains(Tags[?Key==`Workshop`].Value, `GitHubActions`)].FunctionName' --output text)
+FUNCTIONS=$(aws_cmd lambda list-functions --query "Functions[?contains(Tags[?Key==`Workshop`].Value, `GitHubActions`)].FunctionName" --output text)
 
 if [ -n "$FUNCTIONS" ]; then
     for FUNCTION_NAME in $FUNCTIONS; do
@@ -78,7 +78,7 @@ echo ""
 
 # Clean up Lambda execution roles
 echo "🗑️ Cleaning up Lambda execution roles..."
-ROLES=$(aws_cmd iam list-roles --query 'Roles[?contains(RoleName, `workshop-lambda`) || contains(RoleName, `WorkshopLambda`)].RoleName' --output text)
+ROLES=$(aws_cmd iam list-roles --query "Roles[?contains(RoleName, `workshop-lambda`) || contains(RoleName, `WorkshopLambda`)].RoleName" --output text)
 
 if [ -n "$ROLES" ]; then
     for ROLE_NAME in $ROLES; do
@@ -107,7 +107,7 @@ echo ""
 
 # Clean up workshop policies
 echo "🗑️ Cleaning up workshop policies..."
-POLICIES=$(aws_cmd iam list-policies --scope Local --query 'Policies[?contains(PolicyName, `LambdaWorkshop`) || contains(PolicyName, `workshop-lambda`)].Arn' --output text)
+POLICIES=$(aws_cmd iam list-policies --scope Local --query "Policies[?contains(PolicyName, `LambdaWorkshop`) || contains(PolicyName, `workshop-lambda`)].Arn" --output text)
 
 if [ -n "$POLICIES" ]; then
     for POLICY_ARN in $POLICIES; do
@@ -131,7 +131,7 @@ echo ""
 
 # Clean up log groups
 echo "🗑️ Cleaning up log groups..."
-LOG_GROUPS=$(aws_cmd logs describe-log-groups --log-group-name-prefix '/aws/lambda/' --query 'logGroups[?contains(logGroupName, `workshop-lambda`) || contains(logGroupName, `-workshop-lambda`)].logGroupName' --output text)
+LOG_GROUPS=$(aws_cmd logs describe-log-groups --log-group-name-prefix '/aws/lambda/' --query "logGroups[?contains(logGroupName, `workshop-lambda`) || contains(logGroupName, `-workshop-lambda`)].logGroupName" --output text)
 
 if [ -n "$LOG_GROUPS" ]; then
     for LOG_GROUP in $LOG_GROUPS; do
