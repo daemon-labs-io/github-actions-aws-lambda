@@ -69,7 +69,9 @@ Scroll down and click **"Commit new file"**, then leave the default commit messa
 
 ### Open a pull request
 
-Click **"Compare & pull request"**, select **"Create draft pull request"**, give it a title like "Workshop: YOUR-USERNAME", then click **"Create pull request"**.
+Right-click the **"Pull requests"** tab in the navigation and open it in a new tab.
+
+Click **"New pull request"**, select your branch as the source (e.g., `gary-workshop`), ensure the base is `main`, then click **"Create pull request"**.
 
 Click the **"Actions"** link from your PR to see your workflow run!
 
