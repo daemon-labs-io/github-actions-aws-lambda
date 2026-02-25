@@ -75,3 +75,34 @@ jobs:
             --function-name ${{ env.FUNCTION_NAME }} \
             --zip-file fileb://function.zip
           echo "🔄 Lambda function ${{ env.FUNCTION_NAME }} updated!"
+
+      - name: Get Lambda function URL
+        id: lambda_info
+        run: |
+          # Check if function has a URL config
+          if aws lambda get-function-url-config --function-name ${{ env.FUNCTION_NAME }} >/dev/null 2>&1; then
+            FUNCTION_URL=$(aws lambda get-function-url-config --function-name ${{ env.FUNCTION_NAME }} --query 'FunctionUrl' --output text)
+            echo "url=$FUNCTION_URL" >> $GITHUB_OUTPUT
+          else
+            echo "url=" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Create Function URL (if not exists)
+        if: steps.lambda_info.outputs.url == ''
+        run: |
+          FUNCTION_URL=$(aws lambda create-function-url-config \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --auth-type NONE \
+            --query 'FunctionUrl' \
+            --output text)
+      
+          # Add permission for public access
+          aws lambda add-permission \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --action lambda:InvokeFunctionUrl \
+            --principal '*' \
+            --statement-id function-url-public-access \
+            --function-url-auth-type NONE
+      
+          echo "🔗 Function URL created: $FUNCTION_URL"
+          echo "url=$FUNCTION_URL" >> $GITHUB_OUTPUT
