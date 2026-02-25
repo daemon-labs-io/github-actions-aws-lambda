@@ -1,9 +1,7 @@
 ---
 name: Linting
 on:
-  pull_request:
-    branches-ignore:
-      - "*-workshop"
+  pull_request: null
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -15,6 +13,7 @@ permissions:
   statuses: write
 jobs:
   linting:
+    if: "!endsWith(github.head_ref, '-workshop')"
     uses: daemon-labs-io/.github/.github/workflows/reusable-linting.yaml@main
     permissions:
       contents: read
