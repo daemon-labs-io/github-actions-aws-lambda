@@ -269,10 +269,3 @@ You've **built a complete GitHub Actions workflow from scratch** that:
 ✅ **Creates** HTTP endpoints via Function URLs  
 ✅ **Learned** both raw CLI commands and pre-built actions  
 ✅ **Can simplify** deployments with aws-lambda-deploy
-
-### Next Steps
-
-- Try adding automated testing to your workflow
-- Explore API Gateway integration for more complex routing
-- Learn about infrastructure as code with CDK/Terraform
-- Build multi-environment pipelines with approval workflows
