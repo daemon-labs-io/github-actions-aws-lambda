@@ -106,3 +106,24 @@ jobs:
       
           echo "🔗 Function URL created: $FUNCTION_URL"
           echo "url=$FUNCTION_URL" >> $GITHUB_OUTPUT
+
+      - name: Test Lambda function
+        run: |
+          echo "🧪 Testing Lambda function..."
+          FUNCTION_URL=$(aws lambda get-function-url-config --function-name ${{ env.FUNCTION_NAME }} --query 'FunctionUrl' --output text)
+      
+          # Wait a moment for function to be ready
+          sleep 5
+      
+          # Test the function
+          RESPONSE=$(curl -s -X POST "$FUNCTION_URL" -d '{}' -H "Content-Type: application/json")
+          echo "📋 Lambda response:"
+          echo "$RESPONSE" | jq '.'
+      
+          # Extract status from response
+          STATUS=$(echo "$RESPONSE" | jq -r '.statusCode // "unknown"')
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Lambda function is working correctly!"
+          else
+            echo "⚠️ Lambda function returned status: $STATUS"
+          fi
