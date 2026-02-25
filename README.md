@@ -189,44 +189,9 @@ Add this step after the checkout step:
 
 ---
 
-## Section 5: Make Lambda Accessible
+## Section 5: Test Your Deployment
 
-**Goal:** Add HTTP access and testing to complete your deployment pipeline.
-
-### Create Function URL for HTTP Access
-
-```yaml
-- name: Get Lambda function URL
-  id: lambda_info
-  run: |
-    # Check if function has a URL config
-    if aws lambda get-function-url-config --function-name ${{ env.FUNCTION_NAME }} >/dev/null 2>&1; then
-      FUNCTION_URL=$(aws lambda get-function-url-config --function-name ${{ env.FUNCTION_NAME }} --query 'FunctionUrl' --output text)
-      echo "url=$FUNCTION_URL" >> $GITHUB_OUTPUT
-    else
-      echo "url=" >> $GITHUB_OUTPUT
-    fi
-
-- name: Create Function URL (if not exists)
-  if: steps.lambda_info.outputs.url == ''
-  run: |
-    FUNCTION_URL=$(aws lambda create-function-url-config \
-      --function-name ${{ env.FUNCTION_NAME }} \
-      --auth-type NONE \
-      --query 'FunctionUrl' \
-      --output text)
-
-    # Add permission for public access
-    aws lambda add-permission \
-      --function-name ${{ env.FUNCTION_NAME }} \
-      --action lambda:InvokeFunctionUrl \
-      --principal '*' \
-      --statement-id function-url-public-access \
-      --function-url-auth-type NONE
-
-    echo "🔗 Function URL created: $FUNCTION_URL"
-    echo "url=$FUNCTION_URL" >> $GITHUB_OUTPUT
-```
+**Goal:** Verify your Lambda function is working correctly.
 
 ### Test Your Deployed Lambda
 
@@ -234,26 +199,17 @@ Add this step after the checkout step:
 - name: Test Lambda function
   run: |
     echo "🧪 Testing Lambda function..."
-    FUNCTION_URL=$(aws lambda get-function-url-config --function-name ${{ env.FUNCTION_NAME }} --query 'FunctionUrl' --output text)
-
-    # Wait a moment for function to be ready
-    sleep 5
-
-    # Test the function
-    RESPONSE=$(curl -s -X POST "$FUNCTION_URL" -d '{}' -H "Content-Type: application/json")
+    aws lambda invoke \
+      --function-name ${{ env.FUNCTION_NAME }} \
+      --payload '{}' \
+      --log-type Tail \
+      response.json
+    
     echo "📋 Lambda response:"
-    echo "$RESPONSE" | jq '.'
-
-    # Extract status from response
-    STATUS=$(echo "$RESPONSE" | jq -r '.statusCode // "unknown"')
-    if [ "$STATUS" = "200" ]; then
-      echo "✅ Lambda function is working correctly!"
-    else
-      echo "⚠️ Lambda function returned status: $STATUS"
-    fi
+    cat response.json
 ```
 
-**Your turn:** Add the URL creation and testing. Your Lambda should now be publicly accessible!
+**Your turn:** Add the testing step. Your Lambda should now be deployed and working!
 
 ---
 
