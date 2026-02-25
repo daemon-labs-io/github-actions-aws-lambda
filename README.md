@@ -49,6 +49,8 @@ Before beginning this workshop, please ensure your environment is correctly set 
    jobs:
      deploy:
        runs-on: ubuntu-latest
+       env:
+         FUNCTION_NAME: ${{ github.ref_name }}
        permissions:
          id-token: write
          contents: read
@@ -77,17 +79,6 @@ Add this step after the checkout step:
   with:
     role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
     aws-region: ${{ env.AWS_REGION }}
-```
-
-### Extract Username from Branch
-
-```yaml
-- name: Extract username from branch
-  run: |
-    USERNAME=$(echo ${{ github.ref_name }} | sed 's/-workshop//')
-    echo "USERNAME=$USERNAME" >> $GITHUB_ENV
-    echo "FUNCTION_NAME=${USERNAME}-workshop-lambda" >> $GITHUB_ENV
-    echo "🚨 Deploying for user: $USERNAME"
 ```
 
 ### Set Up Node.js Build Environment
@@ -167,9 +158,9 @@ Add this step after the checkout step:
       --role ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }} \
       --handler build/index.handler \
       --zip-file fileb://function.zip \
-      --description "Workshop Lambda deployed by ${{ env.USERNAME }}" \
-      --environment Variables={GITHUB_ACTOR=${{ env.USERNAME }}} \
-      --tags Workshop=GitHubActions,User=${{ env.USERNAME }}
+      --description "Workshop Lambda deployed by ${{ github.actor }}" \
+      --environment Variables={GITHUB_ACTOR=${{ github.actor }}} \
+      --tags Workshop=GitHubActions,User=${{ github.actor }}
     echo "🎉 Lambda function ${{ env.FUNCTION_NAME }} created!"
 
 - name: Update Lambda function code
@@ -278,7 +269,7 @@ Replace your **Section 4 and 5 steps** with this single action:
     handler: index.handler
     runtime: nodejs20.x
     function-url-auth-type: NONE
-    description: "Workshop Lambda deployed by ${{ env.USERNAME }}"
+    description: "Workshop Lambda deployed by ${{ github.actor }}"
 ```
 
 > [!TIP]
