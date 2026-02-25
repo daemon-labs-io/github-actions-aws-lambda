@@ -46,10 +46,10 @@ jobs:
         uses: aws-actions/aws-lambda-deploy@v1
         with:
           function-name: ${{ env.FUNCTION_NAME }}
+          function-description: "Workshop Lambda deployed by ${{ github.actor }}"
           code-artifacts-dir: ./lambda
           handler: index.handler
           runtime: nodejs20.x
-          description: "Workshop Lambda deployed by ${{ github.actor }}"
       - name: Test Lambda function
         run: |
           echo "🧪 Testing Lambda function..."
