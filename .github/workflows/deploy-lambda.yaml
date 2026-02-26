@@ -48,7 +48,7 @@ jobs:
           function-name: ${{ env.FUNCTION_NAME }}
           function-description: "Workshop Lambda deployed by ${{ github.actor }}"
           code-artifacts-dir: ./lambda
-          handler: index.handler
+          handler: build/index.handler
           runtime: nodejs24.x
       - name: Test Lambda function
         run: |
