@@ -42,7 +42,32 @@ jobs:
       - name: Build TypeScript
         working-directory: ./lambda
         run: npm run build
-      - name: Package Lambda function
-        working-directory: ./lambda
-        run: npm run package
-
+      - name: Deploy to Lambda
+        uses: aws-actions/aws-lambda-deploy@v1
+        with:
+          function-name: ${{ env.FUNCTION_NAME }}
+          function-description: "Workshop Lambda deployed by ${{ github.actor }}"
+          code-artifacts-dir: ./lambda
+          handler: build/index.handler
+          runtime: nodejs24.x
+          env-vars: |
+            GITHUB_ACTOR=${{ github.actor }}
+            ENVIRONMENT=workshop
+      - name: Test Lambda function
+        run: |
+          echo "🧪 Testing Lambda function..."
+          aws lambda invoke \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --payload '{}' \
+            --log-type Tail \
+            response.json
+          
+          echo "📋 Lambda response:"
+          cat response.json   
+      - name: Verify environment variables
+        run: |
+          echo "🔍 Checking Lambda configuration..."
+          aws lambda get-function-configuration \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --query 'Environment' \
+            --output table
