@@ -44,6 +44,8 @@ name: Deploy Lambda to AWS
 on:
   push:
     branches: ["*-workshop"]
+    paths:
+      - "lambda/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
