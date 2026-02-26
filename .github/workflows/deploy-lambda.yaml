@@ -45,4 +45,13 @@ jobs:
       - name: Package Lambda function
         working-directory: ./lambda
         run: npm run package
-
+      - name: Test Lambda function
+        run: |
+          echo "🧪 Testing Lambda function..."
+          aws lambda invoke \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --payload '{}' \
+            --log-type Tail \
+            response.json
+          echo "📋 Lambda response:"
+          cat response.json
