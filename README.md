@@ -278,7 +278,7 @@ Replace the **Section 4** deployment steps and keep the **Section 5** test step:
     function-name: ${{ env.FUNCTION_NAME }}
     function-description: "Workshop Lambda deployed by ${{ github.actor }}"
     code-artifacts-dir: ./lambda
-    handler: index.handler
+    handler: build/index.handler
     runtime: nodejs24.x
 ```
 
@@ -311,7 +311,7 @@ Let's see how to pass configuration to your Lambda using environment variables. 
     function-name: ${{ env.FUNCTION_NAME }}
     function-description: "Workshop Lambda deployed by ${{ github.actor }}"
     code-artifacts-dir: ./lambda
-    handler: index.handler
+    handler: build/index.handler
     runtime: nodejs24.x
     env-vars: |
       GITHUB_ACTOR=${{ github.actor }}
