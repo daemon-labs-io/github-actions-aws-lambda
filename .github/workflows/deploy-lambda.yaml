@@ -63,4 +63,11 @@ jobs:
             response.json
           
           echo "📋 Lambda response:"
-          cat response.json    
+          cat response.json   
+      - name: Verify environment variables
+        run: |
+          echo "🔍 Checking Lambda configuration..."
+          aws lambda get-function-configuration \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --query 'Environment' \
+            --output table
