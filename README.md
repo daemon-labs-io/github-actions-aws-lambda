@@ -45,7 +45,8 @@ on:
   push:
     branches: ["*-workshop"]
     paths:
-      - "lambda/**"
+      - .github/**
+      - lambda/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -68,7 +69,7 @@ jobs:
 ```
 
 > [!TIP]
-> The `paths:` filter means the workflow only runs when files in `lambda/**` change. This saves CI minutes by skipping runs when only README or other files are modified!
+> The `paths:` filter means the workflow only runs when files in `.github/**` or `lambda/**` change. This saves CI minutes by skipping runs when only README or other files are modified!
 
 Scroll down and click **"Commit new file"**, then leave the default commit message and click **"Commit new file"** again.
 
