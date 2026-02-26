@@ -4,7 +4,8 @@ on:
   push:
     branches: ["*-workshop"]
     paths:
-      - "lambda/**"
+      - .github/**
+      - lambda/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
