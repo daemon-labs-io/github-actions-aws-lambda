@@ -227,32 +227,6 @@ Add this step after the checkout step:
 
 **Your turn:** Add the testing step. Your Lambda should now be deployed and working!
 
-### View CloudWatch logs
-
-Let's see what your Lambda logged when it ran. The CI runner can fetch CloudWatch logs (you don't need direct AWS access).
-
-```yaml
-- name: Get CloudWatch logs
-  run: |
-    echo "📜 Fetching CloudWatch logs..."
-    LOG_STREAM=$(aws logs describe-log-streams \
-      --log-group-name /aws/lambda/${{ env.FUNCTION_NAME }} \
-      --order-by LastEventTime \
-      --descending \
-      --max-items 1 \
-      --query 'logStreams[0].logStreamName' \
-      --output text)
-    
-    aws logs get-log-events \
-      --log-group-name /aws/lambda/${{ env.FUNCTION_NAME }} \
-      --log-stream-name "$LOG_STREAM" \
-      --limit 20 \
-      --output table
-```
-
-> [!TIP]
-> CloudWatch logs show you exactly what happened inside your Lambda - useful for debugging!
-
 ---
 
 ## Section 6: Simplify with reusable actions
