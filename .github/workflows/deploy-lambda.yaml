@@ -45,6 +45,7 @@ jobs:
       - name: Package Lambda function
         working-directory: ./lambda
         run: npm run package
+<<<<<<< gary-workshop
       - name: Check if Lambda function exists
         id: check_lambda
         run: |
@@ -78,3 +79,6 @@ jobs:
             --function-name ${{ env.FUNCTION_NAME }} \
             --zip-file fileb://function.zip
           echo "🔄 Lambda function ${{ env.FUNCTION_NAME }} updated!"
+=======
+
+>>>>>>> main
