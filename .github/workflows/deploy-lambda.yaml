@@ -1,0 +1,26 @@
+name: Deploy Lambda to AWS
+
+on:
+  push:
+    branches: ["*-workshop"]
+    paths:
+      - "lambda/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: eu-west-1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      FUNCTION_NAME: ${{ github.ref_name }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
