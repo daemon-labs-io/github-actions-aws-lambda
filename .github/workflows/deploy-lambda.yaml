@@ -45,4 +45,36 @@ jobs:
       - name: Package Lambda function
         working-directory: ./lambda
         run: npm run package
-        
+      - name: Check if Lambda function exists
+        id: check_lambda
+        run: |
+          if aws lambda get-function --function-name ${{ env.FUNCTION_NAME }} >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "✅ Lambda function ${{ env.FUNCTION_NAME }} exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "➡️ Lambda function ${{ env.FUNCTION_NAME }} needs to be created"
+          fi
+      - name: Create Lambda function
+        if: steps.check_lambda.outputs.exists == 'false'
+        working-directory: ./lambda
+        run: |
+          aws lambda create-function \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --runtime nodejs24.x \
+            --role ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }} \
+            --handler build/index.handler \
+            --zip-file fileb://function.zip \
+            --description "Workshop Lambda deployed by ${{ github.actor }}" \
+            --environment Variables={GITHUB_ACTOR=${{ github.actor }}} \
+            --tags Workshop=GitHubActions,User=${{ github.actor }}
+          echo "🎉 Lambda function ${{ env.FUNCTION_NAME }} created!"
+      
+      - name: Update Lambda function code
+        if: steps.check_lambda.outputs.exists == 'true'
+        working-directory: ./lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --zip-file fileb://function.zip
+          echo "🔄 Lambda function ${{ env.FUNCTION_NAME }} updated!"
