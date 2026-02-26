@@ -78,27 +78,15 @@ jobs:
             --function-name ${{ env.FUNCTION_NAME }} \
             --zip-file fileb://function.zip
           echo "🔄 Lambda function ${{ env.FUNCTION_NAME }} updated!"
-
-      - name: Create Lambda function
-        if: steps.check_lambda.outputs.exists == 'false'
-        working-directory: ./lambda
+  
+       - name: Test Lambda function
         run: |
-          aws lambda create-function \
+          echo "🧪 Testing Lambda function..."
+          aws lambda invoke \
             --function-name ${{ env.FUNCTION_NAME }} \
-            --runtime nodejs24.x \
-            --role ${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }} \
-            --handler build/index.handler \
-            --zip-file fileb://function.zip \
-            --description "Workshop Lambda deployed by ${{ github.actor }}" \
-            --environment Variables={GITHUB_ACTOR=${{ github.actor }}} \
-            --tags Workshop=GitHubActions,User=${{ github.actor }}
-          echo "🎉 Lambda function ${{ env.FUNCTION_NAME }} created!"
-      
-      - name: Update Lambda function code
-        if: steps.check_lambda.outputs.exists == 'true'
-        working-directory: ./lambda
-        run: |
-          aws lambda update-function-code \
-            --function-name ${{ env.FUNCTION_NAME }} \
-            --zip-file fileb://function.zip
-          echo "🔄 Lambda function ${{ env.FUNCTION_NAME }} updated!"
+            --payload '{}' \
+            --log-type Tail \
+            response.json
+          
+          echo "📋 Lambda response:"
+          cat response.json
