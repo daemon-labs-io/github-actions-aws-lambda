@@ -45,4 +45,14 @@ jobs:
       - name: Package Lambda function
         working-directory: ./lambda
         run: npm run package
-
+      - name: Check if Lambda function exists
+        id: check_lambda
+        run: |
+          if aws lambda get-function --function-name ${{ env.FUNCTION_NAME }} >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "✅ Lambda function ${{ env.FUNCTION_NAME }} exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "➡️ Lambda function ${{ env.FUNCTION_NAME }} needs to be created"
+          fi
+      
