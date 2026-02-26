@@ -45,3 +45,4 @@ jobs:
       - name: Package Lambda function
         working-directory: ./lambda
         run: npm run package
+
