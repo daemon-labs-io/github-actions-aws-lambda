@@ -78,3 +78,30 @@ jobs:
             --function-name ${{ env.FUNCTION_NAME }} \
             --zip-file fileb://function.zip
           echo "🔄 Lambda function ${{ env.FUNCTION_NAME }} updated!"
+      - name: Test Lambda function
+        run: |
+          echo "🧪 Testing Lambda function..."
+          aws lambda invoke \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --payload '{}' \
+            --log-type Tail \
+            response.json
+          
+          echo "📋 Lambda response:"
+          cat response.json
+      - name: Get CloudWatch logs
+        run: |
+          echo "📜 Fetching CloudWatch logs..."
+          LOG_STREAM=$(aws logs describe-log-streams \
+            --log-group-name /aws/lambda/${{ env.FUNCTION_NAME }} \
+            --order-by LastEventTime \
+            --descending \
+            --max-items 1 \
+            --query 'logStreams[0].logStreamName' \
+            --output text)
+          
+          aws logs get-log-events \
+            --log-group-name /aws/lambda/${{ env.FUNCTION_NAME }} \
+            --log-stream-name "$LOG_STREAM" \
+            --limit 20 \
+            --output table
