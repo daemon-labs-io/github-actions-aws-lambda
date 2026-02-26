@@ -80,6 +80,16 @@ Click **"New pull request"**, select your branch as the source (e.g., `gary-work
 
 Click the **"Actions"** link from your PR to see your workflow run!
 
+### What can GitHub Actions do?
+
+- **Triggers** - Run workflows on push, pull request, schedule, manual dispatch, or webhook events
+- **Jobs** - Group steps that run on the same runner; jobs can run in parallel or depend on each other
+- **Steps** - Execute shell commands or use pre-built actions
+- **Actions** - Reusable units of work from GitHub Marketplace (or build your own)
+
+> [!NOTE]
+> Want to learn more about workflow syntax? Check out the [GitHub Actions workflow reference](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax).
+
 ---
 
 ## Section 2: GitHub Actions foundation
@@ -216,6 +226,32 @@ Add this step after the checkout step:
 
 **Your turn:** Add the testing step. Your Lambda should now be deployed and working!
 
+### View CloudWatch logs
+
+Let's see what your Lambda logged when it ran. The CI runner can fetch CloudWatch logs (you don't need direct AWS access).
+
+```yaml
+- name: Get CloudWatch logs
+  run: |
+    echo "📜 Fetching CloudWatch logs..."
+    LOG_STREAM=$(aws logs describe-log-streams \
+      --log-group-name /aws/lambda/${{ env.FUNCTION_NAME }} \
+      --order-by LastEventTime \
+      --descending \
+      --max-items 1 \
+      --query 'logStreams[0].logStreamName' \
+      --output text)
+    
+    aws logs get-log-events \
+      --log-group-name /aws/lambda/${{ env.FUNCTION_NAME }} \
+      --log-stream-name "$LOG_STREAM" \
+      --limit 20 \
+      --output table
+```
+
+> [!TIP]
+> CloudWatch logs show you exactly what happened inside your Lambda - useful for debugging!
+
 ---
 
 ## Section 6: Simplify with reusable actions
@@ -262,6 +298,39 @@ The aws-lambda-deploy action eliminates the packaging step (zip) and simplifies 
 | aws-lambda-deploy | Build → Deploy (handles packaging) → Test | ~24 |
 
 Both approaches work - the action just makes it easier!
+
+### Add environment variables
+
+Let's see how to pass configuration to your Lambda using environment variables. Update your deployment to include some:
+
+```yaml
+- name: Deploy to Lambda
+  uses: aws-actions/aws-lambda-deploy@v1
+  with:
+    function-name: ${{ env.FUNCTION_NAME }}
+    function-description: "Workshop Lambda deployed by ${{ github.actor }}"
+    code-artifacts-dir: ./lambda
+    handler: index.handler
+    runtime: nodejs24.x
+    env-vars: |
+      GITHUB_ACTOR=${{ github.actor }}
+      ENVIRONMENT=workshop
+```
+
+Now let's verify the environment variables are set:
+
+```yaml
+- name: Verify environment variables
+  run: |
+    echo "🔍 Checking Lambda configuration..."
+    aws lambda get-function-configuration \
+      --function-name ${{ env.FUNCTION_NAME }} \
+      --query 'Environment' \
+      --output table
+```
+
+> [!NOTE]
+> Environment variables are a great way to configure your Lambda without changing code!
 
 ---
 
