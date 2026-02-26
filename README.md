@@ -15,7 +15,7 @@ Before beginning this workshop, please ensure your environment is correctly set 
 
 ---
 
-## Section 1: Getting Started
+## Section 1: Getting started
 
 **Goal:** Create your workshop branch and understand the starting point.
 
@@ -77,11 +77,11 @@ Click the **"Actions"** link from your PR to see your workflow run!
 
 ---
 
-## Section 2: GitHub Actions Foundation
+## Section 2: GitHub Actions foundation
 
 **Goal:** Add the core GitHub Actions pieces for authentication and setup.
 
-### Configure AWS Authentication
+### Configure AWS authentication
 
 Add this step after the checkout step:
 
@@ -93,7 +93,7 @@ Add this step after the checkout step:
     aws-region: ${{ env.AWS_REGION }}
 ```
 
-### Set Up Node.js Build Environment
+### Set up Node.js build environment
 
 ```yaml
 - name: Setup Node.js
@@ -108,11 +108,11 @@ Add this step after the checkout step:
 
 ---
 
-## Section 3: Build and Package
+## Section 3: Build and package
 
 **Goal:** Add the build process to compile and package your Lambda function.
 
-### Install Dependencies and Build TypeScript
+### Install dependencies and duild TypeScript
 
 ```yaml
 - name: Install dependencies
@@ -123,7 +123,7 @@ Add this step after the checkout step:
   run: npm run build
 ```
 
-### Package Lambda for Deployment
+### Package Lambda for deployment
 
 ```yaml
 - name: Package Lambda function
@@ -142,7 +142,7 @@ Add this step after the checkout step:
 
 **Goal:** Add the logic to deploy your packaged Lambda to AWS.
 
-### Check if Lambda Already Exists
+### Check if Lambda already exists
 
 ```yaml
 - name: Check if Lambda function exists
@@ -157,7 +157,7 @@ Add this step after the checkout step:
     fi
 ```
 
-### Create New Lambda or Update Existing
+### Create new Lambda or update existing
 
 ```yaml
 - name: Create Lambda function
@@ -189,11 +189,11 @@ Add this step after the checkout step:
 
 ---
 
-## Section 5: Test Your Deployment
+## Section 5: Test your deployment
 
 **Goal:** Verify your Lambda function is working correctly.
 
-### Test Your Deployed Lambda
+### Test your deployed Lambda
 
 ```yaml
 - name: Test Lambda function
@@ -213,13 +213,13 @@ Add this step after the checkout step:
 
 ---
 
-## Section 6: Simplify with Actions
+## Section 6: Simplify with reusable actions
 
 **Goal:** See how pre-built actions can simplify your workflow.
 
 You've now built a complete deployment pipeline using raw AWS CLI commands. Let's see how we can simplify it!
 
-### Replace Deployment with aws-lambda-deploy
+### Replace deployment with aws-lambda-deploy
 
 The aws-lambda-deploy action handles packaging and deployment automatically:
 
@@ -243,11 +243,11 @@ Replace the **Section 4** deployment steps and keep the **Section 5** test step:
 > [!TIP]
 > The action also supports environment variables, memory size, timeout, and many other options!
 
-### Test Your Simplified Workflow
+### Test your simplified workflow
 
 Commit your changes, watch the workflow run, and notice how much simpler the deployment step is!
 
-### Compare the Results
+### Compare the results
 
 The aws-lambda-deploy action eliminates the packaging step (zip) and simplifies deployment:
 
