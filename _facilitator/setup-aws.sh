@@ -118,6 +118,8 @@ cat > workshop-permissions.json << EOF
                 "logs:CreateLogGroup",
                 "logs:CreateLogStream",
                 "logs:PutLogEvents",
+                "logs:DescribeLogStreams",
+                "logs:GetLogEvents",
                 "iam:PassRole",
                 "iam:CreateRole",
                 "iam:GetRole",
