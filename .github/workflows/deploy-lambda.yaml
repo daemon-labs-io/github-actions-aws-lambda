@@ -51,7 +51,7 @@ jobs:
           handler: build/index.handler
           runtime: nodejs24.x
           env-vars: |
-            GITHUB_ACTOR=${{ github.actor }}
+            GITHUB_ACTOR="${{ github.actor }} 🐼"
             ENVIRONMENT=workshop
       - name: Verify environment variables
         run: |
