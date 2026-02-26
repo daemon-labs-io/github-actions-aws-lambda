@@ -63,6 +63,17 @@ jobs:
           code-artifacts-dir: ./lambda
           handler: build/index.handler
           runtime: nodejs24.x
+          env-vars: |
+            GITHUB_ACTOR=${{ github.actor }}
+            ENVIRONMENT=workshop
+
+      - name: Verify environment variables
+        run: |
+          echo "🔍 Checking Lambda configuration..."
+          aws lambda get-function-configuration \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --query 'Environment' \
+            --output table
   
       - name: Test Lambda function
         run: |
