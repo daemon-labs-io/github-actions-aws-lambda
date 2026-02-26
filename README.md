@@ -114,7 +114,7 @@ Add this step after the checkout step:
 
 **Goal:** Add the build process to compile and package your Lambda function.
 
-### Install dependencies and duild TypeScript
+### Install dependencies and build TypeScript
 
 ```yaml
 - name: Install dependencies
